@@ -34,7 +34,7 @@ import torch.nn as nn
 from torch.autograd import Variable
 import pickle as pkl
 
-from models import ResNet56, ResNet, vgg11, MLPNet,WResNet_model,ResNet_model
+from models import ResNet56, ResNet, MLPNet,ResNet_model
 
 import torchvision
 import torchvision.transforms as transforms
@@ -74,7 +74,7 @@ parser.add_argument('--dataset', type=str, default='cifar10',
 parser.add_argument('--sch', type=str, default='sch1',
                     help='LR schedule')
 parser.add_argument('--arch', type=str, default='resnet',
-                    help='arch name (resnet, vgg11)')
+                    help='arch name (resnet, mlp)')
 parser.add_argument('--resblocks', type=int, default=9,
                     help='number of resblocks if using resnet architecture')
 parser.add_argument('--L', type=int, default=2,
@@ -110,7 +110,7 @@ args = parser.parse_args()
 
 
 
-if args.arch == 'resnet' or args.arch == 'wresnet':
+if args.arch == 'resnet':
     if args.dataset=='cifar10':
         if args.sch=='he_sch':
             lr_sch = [[91, 0.1], [136, 0.01], [182, 0.001], [1000000000000, 0.001]]
@@ -122,14 +122,6 @@ if args.arch == 'resnet' or args.arch == 'wresnet':
             lr_sch = [[60, 0.1], [120, 0.01], [160, 0.001], [1000000000000, 0.001]]
         elif args.sch=='const':
             lr_sch = [[1000000000000, 0.1]]
-    mom_sch = [[99999999, 1.]]
-elif args.arch == 'vgg11':
-    if args.sch=='sch1':
-        lr_sch = [[25, 0.1], [50, 0.05], [75, 0.025],\
-    [100, 0.012], [125, 0.005], [150, 0.0025], [175, 0.0012], [1000000000000, 0.0012/2.]]
-    elif args.sch=='const':
-            lr_sch = [[1000000000000, 0.1]]
-
     mom_sch = [[99999999, 1.]]
 elif args.arch == 'mlp':
     if args.sch=='sch1':
@@ -278,8 +270,6 @@ if args.arch == 'resnet':
     model = ResNet_model(dropout=args.dropout, normalization= args.normalization, num_classes=nb_classes, dataset=args.dataset, n=args.resblocks)
 elif args.arch=='wresnet':
     model = WResNet_model(num_classes=nb_classes, depth=16, multiplier=4, bn=True)
-elif args.arch == 'vgg11':
-    model = vgg11(dropout=args.dropout, normalization= args.normalization, dataset=args.dataset, affine=not args.noaffine)
 elif args.arch == 'mlp':
     model = MLPNet(nhiddens = [500]*args.L, dropout=args.dropout, normalization= args.normalization)
 # or generally do : ResNet(n=9, nb_filters=16, num_classes=nb_classes, dropout=args.dropout)
