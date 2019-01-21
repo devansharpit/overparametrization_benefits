@@ -13,9 +13,9 @@ def softmax(x):
     e_x = np.exp(x)
     return e_x / e_x.sum()
 
-# Un-normalized ReLU net
+
 init = ['he', 'glorot', 'gaussian1'][2]
-scaled=True
+scaled=True # True is using proposed WN initialization, False for traditional WN
 
 
 N=2000 # number of samples

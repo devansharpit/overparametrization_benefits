@@ -1,4 +1,7 @@
 '''
+
+## Change directory paths on line 53 and 55
+
 ### Experiments for MNIST MLP:
 
 python main.py --dataset=mnist --arch=mlp  --save_dir=- --epochs=30 --wdecay=0.0005  --sch=sch1 --init=proposed --lr=1. --normalization=wn --L=2
@@ -47,9 +50,9 @@ import tqdm
 parser = argparse.ArgumentParser(description='CNN experiments')
 
 # Directories
-parser.add_argument('--data', type=str, default='/network/home/arpitdev/data/',
+parser.add_argument('--data', type=str, default='path/to/data/',
                     help='location of the data corpus')
-parser.add_argument('--root_dir', type=str, default='/network/home/arpitdev/results/norm_preserving_relu/',
+parser.add_argument('--root_dir', type=str, default='path/where/results/are/stored/',
                     help='root dir path to save the log and the final model')
 parser.add_argument('--save_dir', type=str, default='default/',
                     help='dir path (inside root_dir) to save the log and the final model')
