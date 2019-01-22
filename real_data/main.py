@@ -268,11 +268,9 @@ print('==> Building model..')
 start_epoch=1
 if args.arch == 'resnet':
     model = ResNet_model(dropout=args.dropout, normalization= args.normalization, num_classes=nb_classes, dataset=args.dataset, n=args.resblocks)
-elif args.arch=='wresnet':
-    model = WResNet_model(num_classes=nb_classes, depth=16, multiplier=4, bn=True)
 elif args.arch == 'mlp':
     model = MLPNet(nhiddens = [500]*args.L, dropout=args.dropout, normalization= args.normalization)
-# or generally do : ResNet(n=9, nb_filters=16, num_classes=nb_classes, dropout=args.dropout)
+
 nb = 0
 if args.init == 'he':
     for m in model.modules():
