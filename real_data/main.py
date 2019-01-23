@@ -1,6 +1,7 @@
 '''
 
-## Change directory paths on line 53 and 55
+## Change directory paths on line 50 and 52
+
 
 ### Experiments for MNIST MLP:
 
@@ -15,9 +16,9 @@ python main.py --arch=resnet --resblocks=9 --epochs=182 --wdecay=0.0002 --sch=he
 ### Important arguments:
 --init: option- proposed, he
 --lr: float factor that multiplies the learning rate specified in the learning rate schedule
---normalization: options- wn (for traditional WN), swn (for proposed WN)
+--normalization: options- wn (for WN), None (for un-normalized network)
 --arch: architecture option- resnet, mlp
---resblocks: integer specofying the number of resblocks to be used if using resnet (use 9 for resnet-56 and 83 for resnet-500)
+--resblocks: integer specifying the number of resblocks to be used if using resnet (use 9 for resnet-56 and 83 for resnet-500)
 --L: integer specifying the depth of MLP if --arch is mlp
 --wdecay: float specifying the value of weight decay coefficient
 --epochs: integer specifying the number of epochs
@@ -34,7 +35,7 @@ import torch.nn as nn
 from torch.autograd import Variable
 import pickle as pkl
 
-from models import ResNet56, ResNet, MLPNet,ResNet_model
+from models import ResNet56, MLPNet,ResNet_model
 
 import torchvision
 import torchvision.transforms as transforms
@@ -50,9 +51,9 @@ import tqdm
 parser = argparse.ArgumentParser(description='CNN experiments')
 
 # Directories
-parser.add_argument('--data', type=str, default='path/to/data/',
+parser.add_argument('--data', type=str, default='/path/to/data/',
                     help='location of the data corpus')
-parser.add_argument('--root_dir', type=str, default='path/where/results/are/stored/',
+parser.add_argument('--root_dir', type=str, default='/path/to/store/results/',
                     help='root dir path to save the log and the final model')
 parser.add_argument('--save_dir', type=str, default='default/',
                     help='dir path (inside root_dir) to save the log and the final model')
@@ -122,6 +123,8 @@ if args.arch == 'resnet':
             lr_sch = [[60, 0.1], [120, 0.01], [160, 0.001], [1000000000000, 0.001]]
         elif args.sch=='const':
             lr_sch = [[1000000000000, 0.1]]
+    mom_sch = [[99999999, 1.]]
+
     mom_sch = [[99999999, 1.]]
 elif args.arch == 'mlp':
     if args.sch=='sch1':
@@ -267,12 +270,17 @@ writer = SummaryWriter(log_dir=log_dir)
 print('==> Building model..')
 start_epoch=1
 if args.arch == 'resnet':
-    model = ResNet_model(dropout=args.dropout, normalization= args.normalization, num_classes=nb_classes, dataset=args.dataset, n=args.resblocks)
+    model = ResNet_model(dropout=args.dropout, normalization= args.normalization, num_classes=nb_classes, dataset=args.dataset, n=args.resblocks, init=args.init)
 elif args.arch == 'mlp':
-    model = MLPNet(nhiddens = [500]*args.L, dropout=args.dropout, normalization= args.normalization)
+    model = MLPNet(nhiddens = [500]*args.L, dropout=args.dropout, normalization= args.normalization, init=args.init)
 
 nb = 0
-if args.init == 'he':
+
+if args.normalization!='wn' and args.init=='proposed':
+    wt_init='he'
+else:
+    wt_init = args.init
+if wt_init == 'he':
     for m in model.modules():
         if isinstance(m, nn.Conv2d):
             nb += 1
@@ -283,7 +291,7 @@ if args.init == 'he':
             print ('Update init of ', m)
             m.weight.data.fill_(1)
             m.bias.data.zero_()
-if args.init == 'proposed':
+if wt_init == 'proposed':
     for m in model.modules():
         if isinstance(m, nn.Conv2d):
             nb += 1
@@ -367,8 +375,8 @@ def train(epoch):
     global optimizer
     global args
     global model, global_iters,last_load_epoch
-    # Turn on training mode which enables dropout.
     model.train()
+
     train_loss = 0
     correct = 0
     total = 0

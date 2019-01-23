@@ -1,4 +1,4 @@
-# ResNet, fixed number of resblocks, varying resblock width with WN
+# ResNet, fixed number of resblocks, varying resblock width without WN
 import numpy as np
 import tqdm
 import matplotlib.pyplot as plt
@@ -6,7 +6,7 @@ import pickle as pkl
 import math
 
 '''
-Experiments for ResNet network output norm, fixed number of resblocks, varying resblock width (figure 8)
+Experiments for un-normalized ResNet network output norm, fixed number of resblocks, varying resblock width (figure 7)
 '''
 
 init = ['he', 'glorot', 'gaussian1'][0]
@@ -19,8 +19,8 @@ B = 10 # number of resblocks
 
 
 
-for scaled in [True,False]: # True is using proposed WN initialization, False for traditional WN
-    file_name="results/resnet_varym_init-{}_N{}_n{}_B{}_WN-1_scaled-{}.pkl".format(init,N,n,B,int(WN),int(scaled))
+for scaled in [True,False]: # True is using proposed initialization, False for traditional initialization
+    file_name="results/resnet_varym_init-{}_N{}_n{}_B{}_WN-0_scaled-{}.pkl".format(init,N,n,B,int(scaled))
     print(file_name)
     epsilon_m_fwd = [ ]
     for m in m_list:
@@ -37,30 +37,20 @@ for scaled in [True,False]: # True is using proposed WN initialization, False fo
             elif init=='gaussian1':
                 W[l] = [np.random.randn(m,n) if l==0 else np.random.randn(m,m),
                         np.random.randn(m,m)]
-            norm = np.linalg.norm(W[l][0], axis=1)
-            W[l][0] /= norm[:,None]
-            norm = np.linalg.norm(W[l][1], axis=1)
-            W[l][1] /= norm[:,None]
 
         for N_i in tqdm.tqdm(range(N)):
             x = np.random.randn(n)
             h=1.*x
             # fwd pass
             R=1.*W[0][0]
-            if scaled and WN:
-                R *= np.sqrt(2*R.shape[1]/R.shape[0])
             a = R.dot(h)  
             h = np.maximum(0,a)
             h_res = 1.*h
             for l in range(B):
                 R=1.*W[l+1][0]
-                if scaled:
-                    R *= np.sqrt(2*R.shape[1]/R.shape[0])
                 a = R.dot(h_res)  
                 h_res = np.maximum(0,a)
                 R=1.*W[l+1][1]
-                if scaled:
-                    R *= np.sqrt(2*R.shape[1]/R.shape[0])
                 a = R.dot(h_res)  
                 h_res = np.maximum(0,a)
             if scaled:

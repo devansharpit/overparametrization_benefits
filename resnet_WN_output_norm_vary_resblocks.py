@@ -1,4 +1,4 @@
-# ResNet, fixed resblock width, varying number of resblocks
+# ResNet, fixed resblock width, varying number of resblocks with WN
 import numpy as np
 import tqdm
 import matplotlib.pyplot as plt
@@ -6,7 +6,7 @@ import pickle as pkl
 import math
 
 '''
-Experiments for ResNet network output norm, fixed resblock width, varying number of resblocks (figure 7)
+Experiments for ResNet network output norm, fixed resblock width, varying number of resblocks (figure 8)
 '''
 
 init = ['he', 'glorot', 'gaussian1'][0]
@@ -19,7 +19,7 @@ print('width: ',m)
 
 
 for scaled in [ False,True]: # True is using proposed WN initialization, False for traditional WN
-    file_name="results/resnet_varyB_init-{}_N{}_n{}_m{}_WN_scaled-{}.pkl".format(init,N,n,m,int(scaled))
+    file_name="results/resnet_varyB_init-{}_N{}_n{}_m{}_WN-1_scaled-{}.pkl".format(init,N,n,m,int(scaled))
     print(file_name)
 
     epsilon_B_fwd = [ ]
